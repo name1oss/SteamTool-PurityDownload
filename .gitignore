@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Cache files
+game_list_cache.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db
