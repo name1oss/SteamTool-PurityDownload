@@ -4,7 +4,7 @@ import webbrowser
 import threading
 import os
 import time
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -82,6 +82,22 @@ def index():
 @app.route('/api/games')
 def get_games():
     return jsonify(game_list_cache)
+
+def shutdown_server():
+    """Function to shut down the Werkzeug server."""
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        print('Not running with the Werkzeug Server. Forcing exit.')
+        # A more forceful shutdown for other servers
+        os._exit(0)
+    func()
+
+@app.route('/api/shutdown', methods=['POST'])
+def shutdown():
+    """Shutdown endpoint."""
+    print("Shutdown request received. Shutting down server...")
+    shutdown_server()
+    return 'Server shutting down...'
 
 def open_browser():
     # Delay opening to ensure the server has started

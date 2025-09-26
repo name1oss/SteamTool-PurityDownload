@@ -59,7 +59,19 @@
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-cyan-400 title-glow">SteamTool 清单下载</h1>
+            <div class="flex justify-center items-center relative">
+                <h1 class="text-4xl md:text-5xl font-bold text-cyan-400 title-glow">SteamTool 清单下载</h1>
+                
+                <!-- NEW EXIT BUTTON -->
+                <button id="exitAppBtn" title="关闭应用和服务" class="absolute right-0 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/20 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                      <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                    </svg>
+                    <span>退出应用</span>
+                </button>
+                <!-- END NEW EXIT BUTTON -->
+            </div>
         </header>
 
         <div class="mb-8 sticky top-4 z-10 bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-slate-700">
@@ -248,6 +260,41 @@
             searchInput.dispatchEvent(new Event('input', { bubbles: true })); // 触发input事件以刷新列表
         });
 
+        // --- NEW EXIT FUNCTIONALITY ---
+        const exitAppBtn = document.getElementById('exitAppBtn');
+        const exitApp = async () => {
+            try {
+                const buttonSpan = exitAppBtn.querySelector('span');
+                buttonSpan.textContent = '正在关闭...';
+                exitAppBtn.disabled = true;
+                
+                await fetch('/api/shutdown', { method: 'POST' });
+                
+                // Give the server a moment to shut down
+                setTimeout(() => {
+                    document.body.innerHTML = `
+                        <div class="w-screen h-screen flex flex-col items-center justify-center bg-slate-900 text-white text-center p-4">
+                            <h1 class="text-4xl font-bold text-cyan-400 mb-4">应用已关闭</h1>
+                            <p class="text-slate-400">后端服务已停止，您可以安全地关闭此浏览器标签页。</p>
+                        </div>`;
+                    // window.close() might be blocked by browser policies.
+                    // The message above is a more reliable user experience.
+                    window.close();
+                }, 500);
+
+            } catch (error) {
+                // This message will appear if the fetch request itself fails.
+                document.body.innerHTML = `
+                    <div class="w-screen h-screen flex flex-col items-center justify-center bg-slate-900 text-red-500 text-center p-4">
+                        <h1 class="text-4xl font-bold mb-4">关闭请求已发送</h1>
+                        <p>后端服务应该已经关闭。如果此窗口没有自动关闭，您可以安全地手动关闭它。</p>
+                        <p class="text-sm mt-2">错误详情: ${error.message}</p>
+                    </div>`;
+            }
+        };
+        exitAppBtn.addEventListener('click', exitApp);
+        // --- END NEW EXIT FUNCTIONALITY ---
+
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -267,4 +314,3 @@
     </script>
 </body>
 </html>
-
